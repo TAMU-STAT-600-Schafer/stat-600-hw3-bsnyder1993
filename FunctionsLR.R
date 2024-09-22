@@ -35,7 +35,7 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
   
   # Check that the first column of X and Xt are 1s, if not - display appropriate message and stop execution.
   
-  if(length(X[, 1] == 1) == n1 && length(Xt[, 1] == 1) == n2){}
+  if(sum(as.numeric(X[ ,1] == 1)) == n1 && sum(as.numeric(Xt[ ,1] == 1)) == n2){}
   else{
     stop("Error: First column of X and Xt must be 1's.")
   }
