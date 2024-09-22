@@ -29,6 +29,8 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
   p <- dim(X)[2]
   K <- length(unique(y))
   
+  X_trans <- t(X)
+  
   objective <- rep(0, numIter+1)
   error_train <- rep(0, numIter+1)
   error_test <- rep(0, numIter+1)
@@ -84,7 +86,6 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
   ## Calculate corresponding pk, objective value f(beta_init), training error and testing error given the starting point beta_init
   ##########################################################################
   
-
   X_beta <- X %*% beta
   exp_X_beta <- exp(X_beta)
   
@@ -93,14 +94,14 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
   sum_log <- sapply(1:K, \(i){function_beta(i, Pk_mat, y)})
   objective[1] <- sum(beta * beta) * (lambda / 2) - sum(sum_log)
   
-  y_guess <- sapply(1:n1, \(i){which.max(Pk_mat[i, ])-1})
+  y_guess <- max.col(Pk_mat)-1
   error_train[1] <- (1 - sum(as.numeric(y == y_guess))/n1) * 100
   
   Xt_beta <- Xt %*% beta
   exp_Xt_beta <- exp(Xt_beta)
   
-  Pk_test <- (1/rowSums(exp_Xt_beta)) * exp_Xt_beta
-  yt_guess <- sapply(1:n2, \(i){which.max(Pk_test[i, ])-1})
+  Pk_test <- exp_Xt_beta/rowSums(exp_Xt_beta)
+  yt_guess <- max.col(Pk_test)-1
   error_test[1] <- (1 - sum(as.numeric(yt == yt_guess))/n2) * 100
   
   ## Newton's method cycle - implement the update EXACTLY numIter iterations
@@ -113,12 +114,13 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
     for(k in 1:K){
       
       w <- Pk_mat[ , k] * (1-Pk_mat[ , k])
-      hessian <- crossprod(X, w*X)
+      hessian <- X_trans %*% (w * X)
       diag(hessian) <- diag(hessian) + lambda
-      hessian_inv <- chol2inv(chol(hessian))
+      #hessian_inv <- chol2inv(chol(hessian))
+      hessian_inv <- solve(hessian)
       
       prob_vec <- Pk_mat[ , k] - as.numeric(y == (k-1))
-      jacobian <- crossprod(X, prob_vec) + lambda * beta[ , k]
+      jacobian <- X_trans %*% prob_vec + lambda * beta[ , k]
       
       beta[ , k] <- beta[ , k] - eta * hessian_inv %*% jacobian
       
@@ -128,7 +130,7 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
     exp_X_beta <- exp(X_beta)
     Pk_mat <- exp_X_beta/rowSums(exp_X_beta)
     
-    y_guess <- sapply(1:n1, \(i){which.max(Pk_mat[i, ])-1})
+    y_guess <- max.col(Pk_mat)-1
     error_train[i+1] <- (1 - sum(as.numeric(y == y_guess))/n1) * 100
     
     sum_log <- sapply(1:K, \(i){function_beta(i, Pk_mat, y)})
@@ -136,9 +138,9 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
     
     Xt_beta <- Xt %*% beta
     exp_Xt_beta <- exp(Xt_beta)
-    Pk_test <- (1/rowSums(exp_Xt_beta)) * exp_Xt_beta
+    Pk_test <- exp_Xt_beta/rowSums(exp_Xt_beta)
     
-    yt_guess <- sapply(1:n2, \(i){which.max(Pk_test[i, ])-1})
+    yt_guess <- max.col(Pk_test)-1
     error_test[i+1] <- (1 - sum(as.numeric(yt == yt_guess))/n2) * 100
   }
   
