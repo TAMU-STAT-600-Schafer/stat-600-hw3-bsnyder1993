@@ -44,14 +44,14 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
   
   # Check for compatibility of dimensions between X and Y
   
-  if(length(Y) == n1){}
+  if(length(y) == n1){}
   else{
     stop("Error: incompatible dimensions with X and Y.")
   }
   
   # Check for compatibility of dimensions between Xt and Yt
   
-  if(length(Yt) == n2){}
+  if(length(yt) == n2){}
   else{
     stop("Error: incompatible dimensions with Xt and Yt.")
   }
