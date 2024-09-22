@@ -25,7 +25,8 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
   ###################################
   n1 <- dim(X)[1]
   n2 <- dim(Xt)[1]
-  K <- dim(X)[2]
+  p <- dim(X)[2]
+  K <- length(unique(y))
   
   objective <- rep(0, numIter+1)
   error_train <- rep(0, numIter+1)
@@ -54,10 +55,11 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
   ## Calculate corresponding pk, objective value f(beta_init), training error and testing error given the starting point beta_init
   ##########################################################################
   
+
   X_beta <- X %*% beta
   exp_X_beta <- exp(X_beta)
   
-  Pk_mat <- (1/rowSums(exp_X_beta)) * exp_X_beta
+  Pk_mat <- exp_X_beta/rowSums(exp_X_beta)
   
   sum_log <- sapply(1:K, \(i){function_beta(i, Pk_mat, y)})
   objective[1] <- sum(beta * beta) * (lambda / 2) - sum(sum_log)
@@ -95,7 +97,7 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
     
     X_beta <- X %*% beta
     exp_X_beta <- exp(X_beta)
-    Pk_mat <- (1/rowSums(exp_X_beta)) * exp_X_beta
+    Pk_mat <- exp_X_beta/rowSums(exp_X_beta)
     
     y_guess <- sapply(1:n1, \(i){which.max(Pk_mat[i, ])-1})
     error_train[i+1] <- (1 - sum(as.numeric(y == y_guess))/n1) * 100
@@ -118,5 +120,4 @@ LRMultiClass <- function(X, y, Xt, yt, numIter = 50, eta = 0.1, lambda = .5, bet
   # error_test - (numIter + 1) length vector of testing error % at each iteration (+ starting value)
   # objective - (numIter + 1) length vector of objective values of the function that we are minimizing at each iteration (+ starting value)
   return(list(beta = beta, error_train = error_train, error_test = error_test, objective =  objective))
-  #return(beta)
 }
