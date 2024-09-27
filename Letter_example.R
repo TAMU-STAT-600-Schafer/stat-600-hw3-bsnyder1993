@@ -25,7 +25,7 @@ source("FunctionsLR.R")
 out <- LRMultiClass(X, Y, Xt, Yt, numIter = 50, eta = 0.1, lambda = 1, beta_init = NULL)
 
 # The code below will draw pictures of objective function, as well as train/test error over the iterations
-plot(out$objective, type = 'o', main = "Objective Funciton", xlab = "Iteration", ylab = "Objective Value")
+plot(out$objective, type = 'o', main = "Objective Function", xlab = "Iteration", ylab = "Objective Value")
 plot(out$error_train, type = 'o')
 plot(out$error_test, type = 'o')
 
